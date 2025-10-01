@@ -10,23 +10,36 @@ def add_todo():
     todo = st.session_state["new_todo"] +"\n"  # New line for formatting
     todos.append(todo)                         # Add new to-do to list
     function.write_todos(todos)                # Updating the list
+    st.session_state['new_todo'] = ""          # clears the text field for next todo
 
 # Title of the web app
-st.title("TO-DO App")
+st.title("TO-DO Web App")
 
 # Subheading
 st.subheader(" we can enter our tasks")
 
-# Looping through each to-do item  and displaying it with checkbox
-for index,todo in enumerate(todos):
-    # Create a checkbox for each to-do item; `key=to,do` ensures each checkbox is unique
-    checkbox = st.checkbox(todo,key = todo)
 
-    if checkbox:   # If the checkbox is ticked
-        todos.pop(index)             # Removes to-do from list
-        function.write_todos(todos)  # save the updated list
-        del st.session_state[todo]    #Removes checkbox from session
-        st.rerun()                    # Rerun the app to update UI
+# --- At the very top of your Streamlit script (BEFORE any other code) ---
+if 'task_finished_message' in st.session_state:
+    # Display the stored message
+    st.success(st.session_state['task_finished_message'])
+    # Remove the message immediately so it only appears once
+    del st.session_state['task_finished_message']
+
+
+# --- Inside your checkbox loop (Modified Deletion Logic) ---
+for index, todo in enumerate(todos):
+    checkbox = st.checkbox(todo, key=todo)
+
+    if checkbox:
+        # Store the confirmation message in session state
+        st.session_state['task_finished_message'] = f"🏆 COMPLETED! 🥳 *{todo}* has been removed 🏆."
+
+        todos.pop(index)
+        function.write_todos(todos)
+        del st.session_state[todo]
+        st.rerun() # This restarts the script and displays the message
+
 
 st.text_input(label = " ",             # Empty label no text shown
               placeholder = "Add a new todo", # Text inside the inputfield
